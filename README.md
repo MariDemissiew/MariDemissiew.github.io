@@ -1,7 +1,7 @@
 
-<p>Project Reports</p>
+# Project Reports
 
-<p>Group 3 Tuesday</p>
+ Group 3 Tuesday
 
 <ul>
   <li><a href="./tests/test/">Tests</a></li>
