@@ -3,7 +3,7 @@
 
  Group 3 Tuesday
 
-* [Tests](./tests/test/)
+* [Tests](./tests/)
 * [JavaDoc](./javadoc/)
 * [Jacoco](./jacoco/)
 * [PMD](./pmd/main.html)
