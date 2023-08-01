@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DocumentParser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">edu.odu.cs.cs350.WebsiteAnalysis</a> &gt; <span class="el_source">DocumentParser.java</span></div><h1>DocumentParser.java</h1><pre class="source lang-java linenums">package edu.odu.cs.cs350.WebsiteAnalysis;
+
+import java.util.List;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.*;
+import org.jsoup.select.Elements;
+
+
+
+public class DocumentParser {
+    
+    private Path siteRoot;
+    private String path;
+    private String relativePath;
+    private List&lt;String&gt; URLs;
+    private Document document;
+
+    /**
+     * Instantiate a DocumentParser object.
+     * @param siteRoot The Path to the site root directory.
+     * @param absPath The file location of the document to be parsed, as a String.
+     * @param URLs The list of absolute URLs corresponding to all files local to the site root.
+     */
+<span class="fc" id="L29">    public DocumentParser(Path siteRoot, String absPath, List&lt;String&gt; URLs) {</span>
+<span class="fc" id="L30">        this.siteRoot = siteRoot;</span>
+<span class="fc" id="L31">        this.path = absPath;</span>
+<span class="fc" id="L32">        this.URLs = URLs;</span>
+<span class="fc" id="L33">        this.relativePath = mapURLtoPath(siteRoot, absPath.toString());</span>
+
+<span class="fc" id="L35">        Path filePath = Path.of(this.path).toAbsolutePath();</span>
+
+        try {
+<span class="fc" id="L38">            document = Jsoup.parse(Files.readString(filePath));</span>
+<span class="fc" id="L39">        } catch (Exception e) {</span>
+            //TODO: handle exception
+<span class="fc" id="L41">            e.printStackTrace();</span>
+<span class="fc" id="L42">        }</span>
+<span class="fc" id="L43">    }</span>
+
+    /**
+     * Parse a file and return a fully built HTMLDocument object containing the data collected.
+     * @return The HTMLDocument data object.
+     */
+    public HTMLDocument parse() {
+        
+<span class="fc" id="L51">        HTMLDocument theDocument = new HTMLDocument</span>
+            .DocumentBuilder(relativePath)
+<span class="fc" id="L53">            .links(parseLinks())</span>
+<span class="fc" id="L54">            .images(parseImages())</span>
+<span class="fc" id="L55">            .scripts(parseJS())</span>
+<span class="fc" id="L56">            .stylesheets(parseCSS())</span>
+<span class="fc" id="L57">            .build();</span>
+
+<span class="fc" id="L59">        return theDocument;</span>
+    }
+    
+    private List&lt;Anchor&gt; parseLinks() {
+<span class="fc" id="L63">        ArrayList&lt;Anchor&gt; theLinks = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L65">        Elements rawLinks = document.select(&quot;a[href]&quot;);</span>
+
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        for(Element link : rawLinks) {</span>
+<span class="fc" id="L68">            String href = link.attr(&quot;href&quot;);</span>
+<span class="fc" id="L69">            Classification classification = classifyLink(href);</span>
+<span class="fc" id="L70">            LinkTargetType targetType = getTargetType(href);</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">            if(classification != Classification.MALFORMED) {</span>
+<span class="fc" id="L72">                Anchor toAdd = new Anchor(href, classification, targetType);</span>
+<span class="fc" id="L73">                theLinks.add(toAdd);</span>
+            }
+<span class="fc" id="L75">        }</span>
+
+<span class="fc" id="L77">        return theLinks;</span>
+    }
+
+    /**
+     * TODO: Public for unit testing purposes, but not intended to be part of interface.
+     * @param href The local relative URL to resolve into an absolute URL.
+     * @return String The absolute URL.
+     */
+    public String reconstructURL(String href) {
+<span class="fc" id="L86">        String suffix = &quot;&quot;;</span>
+
+        //handle ./ ../ prefixes
+
+<span class="fc bfc" id="L90" title="All 2 branches covered.">        if(href.startsWith(&quot;/&quot;)) {</span>
+<span class="fc" id="L91">            suffix = href.replaceFirst(&quot;/&quot;, &quot;&quot;);</span>
+        } else {
+<span class="fc" id="L93">            suffix = URI.create(relativePath).resolve(href).toString();</span>
+        }
+
+<span class="fc" id="L96">        String siteRootMatcher = &quot;/&quot; + siteRoot.toString() + &quot;/&quot;;</span>
+<span class="fc" id="L97">        String[] splitURL = URLs.get(0).split(siteRootMatcher);</span>
+<span class="fc" id="L98">        String prefix = splitURL[0];</span>
+
+<span class="fc" id="L100">        return prefix + siteRootMatcher + suffix;</span>
+    }
+
+    public String mapURLtoPath(Path siteRoot, String absolutePath) {
+        String[] splitPath;
+<span class="fc" id="L105">        String target = siteRoot.getFileName().toString();</span>
+<span class="fc" id="L106">        target = &quot;/&quot; + target + &quot;/&quot;;</span>
+<span class="fc" id="L107">        splitPath = absolutePath.split(target);</span>
+<span class="fc" id="L108">        return splitPath[1];</span>
+    }
+
+    private List&lt;Image&gt; parseImages() {
+<span class="fc" id="L112">        ArrayList&lt;Image&gt; theImages = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L114">        return theImages;</span>
+    }
+
+    private List&lt;Script&gt; parseJS() {
+<span class="fc" id="L118">        ArrayList&lt;Script&gt; theJS = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L120">        return theJS;    </span>
+    }
+
+    private List&lt;Stylesheet&gt; parseCSS() {
+<span class="fc" id="L124">        ArrayList&lt;Stylesheet&gt; theCSS = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L126">        return theCSS;</span>
+    }
+
+    /**
+     * Classify a URL encountered during parsing by cross-referencing against a list
+     * of URLs known to correspond to the file structure of the site under analysis.
+     * @param href The URL to classify.
+     * @return Classification The classification.
+     */
+    public Classification classifyLink(String href) {
+
+        //expand to deal with more cases
+<span class="fc bfc" id="L138" title="All 2 branches covered.">        if(href.contains(&quot;#&quot;)) {</span>
+<span class="fc" id="L139">            return Classification.INTRAPAGE;</span>
+        }
+
+<span class="fc bfc" id="L142" title="All 2 branches covered.">        if(href.startsWith(&quot;http&quot;)) {</span>
+<span class="fc bfc" id="L143" title="All 2 branches covered.">            for (String url : URLs) {</span>
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">                if (url.equals(href)) {</span>
+<span class="nc" id="L145">                    return Classification.INTERNAL;</span>
+                }
+<span class="fc" id="L147">            } </span>
+<span class="fc" id="L148">            return Classification.EXTERNAL;</span>
+        }
+
+<span class="fc" id="L151">        String reconstructedURL = reconstructURL(href);</span>
+
+<span class="fc bfc" id="L153" title="All 2 branches covered.">        for (String url : URLs) {</span>
+<span class="fc bfc" id="L154" title="All 2 branches covered.">            if(url.equals(reconstructedURL)) {</span>
+<span class="fc" id="L155">                return Classification.INTERNAL;</span>
+            }
+<span class="fc" id="L157">        }</span>
+
+<span class="fc" id="L159">        return Classification.MALFORMED;</span>
+    }
+
+    private LinkTargetType getTargetType(String href) {
+        
+        
+<span class="fc" id="L165">        return null;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.2023</span></div></body></html>
