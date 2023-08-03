@@ -1,5 +1,7 @@
-
-# Project Reports
+---
+layout: custom
+title: Project Reports
+---
 
  Group 3 Tuesday
 
