@@ -1,5 +1,2 @@
-theme: minima
+theme: jekyll-theme-cayman
 
-minima:
-  primary_color: "#0000FF"    
-  background_color: "#000000" 
