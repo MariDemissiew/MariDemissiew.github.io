@@ -3,7 +3,7 @@
 
  Group 3 Tuesday
 
-* [JUnit Tests](./JUnit-Tests/)
+* [Test Reports](./Test-Reports/)
 * [JavaDoc](./javadoc/)
 * [Jacoco](./jacoco/)
 * [PMD](./pmd/main.html) 
