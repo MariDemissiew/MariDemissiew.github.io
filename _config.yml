@@ -1,5 +1,5 @@
 theme: minima
 
 minima:
-  primary_color: "#0000FF"    # Blue color
-  background_color: "#000000" # Black color
+  primary_color: "#0000FF"    
+  background_color: "#000000" 
