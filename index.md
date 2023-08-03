@@ -1,7 +1,4 @@
----
-layout: custom
-title: Project Reports
----
+# Project Reports
 
  Group 3 Tuesday
 
