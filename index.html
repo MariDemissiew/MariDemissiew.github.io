@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Project Reports</title>
+  <!-- Add Highcharts library -->
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+</head>
+<body>
+  <h1>Project Reports</h1>
+  <div id="chart-container" style="height: 400px;"></div>
+  <ul>
+    <li><a href="./Test-Reports/">Test Reports</a></li>
+    <li><a href="./javadoc/">JavaDoc</a></li>
+    <li><a href="./jacoco/">Jacoco</a></li>
+    <li><a href="./pmd/main.html">PMD</a></li>
+  </ul>
+
+  <script>
+    // JavaScript code to create and render the Highcharts chart
+    document.addEventListener('DOMContentLoaded', function () {
+      Highcharts.chart('chart-container', {
+        chart: {
+          type: 'column'
+        },
+        title: {
+          text: 'Project Reports'
+        },
+        xAxis: {
+          categories: ['Test Reports', 'JavaDoc', 'Jacoco', 'PMD']
+        },
+        yAxis: {
+          title: {
+            text: 'Number of Reports'
+          }
+        },
+        series: [{
+          name: 'Reports',
+          data: [10, 15, 7, 12] // Replace with the actual number of reports for each category
+        }]
+      });
+    });
+  </script>
+</body>
+</html>
